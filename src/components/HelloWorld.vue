@@ -1,58 +1,176 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div>
+    <div class="record" v-if="isScreenShareSupported && isWebRTCSupported">
+      <h2>Record</h2>
+      <span class="rec" v-show="status == 'recording'">REC</span>
+      <video ref="screen-share" autoplay />
+      <div class="action-group">
+        <button @click="openScreenShare" :disabled="disabled.open">open screen share</button>
+        <button @click="start" :disabled="disabled.start"> start </button>
+        <button @click="pause" :disabled="disabled.pause"> pause </button>
+        <button @click="resume" :disabled="disabled.resume"> resume </button>
+        <button @click="stop" :disabled="disabled.stop"> stop </button>
+      </div>
+    </div>
+    <h2 v-else>Sorry! WebRTC is not fully supported on your browser! Please install latest Chrome on your computer and try this page again.</h2>
+    <div class="preview" v-if="blobUrl">
+      <h2>Preview</h2>
+      <video :src="blobUrl" autoplay controls></video>
+      <button @click="handleDownload" class="download-button">download</button>
+    </div>
   </div>
 </template>
 
 <script>
+
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+  data() {
+    return {
+      blobs:[],
+      recorder:null,
+      localScreenShareStream: null,
+      disabled: {
+        open: false,
+        start: true,
+        pause: true,
+        resume: true,
+        stop: true,
+      },
+      blobUrl: '',
+      isScreenShareSupported: false,
+      isWebRTCSupported: false,
+      showREC: false,
+      screenShareVideoElement:null,
+      blobFile:null,
+      status:''
+    }
+  },
+  created(){
+    if(navigator && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      this.isScreenShareSupported = true
+    }
+    if(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      this.isWebRTCSupported = true
+    }
+  },
+   mounted () {
+    this.screenShareVideoElement = this.$refs['screen-share'];
+  },
+  methods:{
+    async openScreenShare(){
+      const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // console.log(tempStream,'=====stream')
+      this.localScreenShareStream = await navigator.mediaDevices.getDisplayMedia();
+      // console.log(this.localScreenShareStream,'=====sharestream')
+      this.localScreenShareStream.addTrack(tempStream.getAudioTracks()[0]);
+      // console.log(tempStream.getAudioTracks(),'=====track')
+      const screenShareTrack = this.localScreenShareStream.getVideoTracks()[0];
+      // console.log(screenShareTrack,'===screen')
+      if (screenShareTrack) {
+        screenShareTrack.onended = this.onScreenShareEnded;
+        screenShareTrack.onmute = this.onScreenShareEnded;
+      }
+      this.recorder = new MediaRecorder(this.localScreenShareStream);
+      let types = ["video/webm","audio/webm","video/webm;codecs=vp8","video/webm;codecs=daala","video/webm;codecs=h264","audio/webm;codecs=opus","video/mpeg",'video/mp4','video/mp4'];
+        for (var i in types) {
+          console.log( "Is " + types[i] + " supported? " + (MediaRecorder.isTypeSupported(types[i]) ? true : false));
+        }
+
+      this.recorder.onstop = this.onRecordStopped;
+      this.recorder.ondataavailable = this.onDataAvailable;
+
+      this.$refs['screen-share'].srcObject = this.localScreenShareStream;
+      this.$refs['screen-share'].muted = true;
+      this.disabled.open = true;
+      this.disabled.start = false;
+    },
+    onDataAvailable (e) {
+      console.log(e,'====e')
+      this.blobs.push(e.data);
+    },
+    onRecordStopped () {
+      const blob = new Blob(this.blobs, { 'type': 'video/webm' });
+      this.blobFile = blob;
+      console.log(this.blobs,blob,'===blob')
+      this.blobUrl = URL.createObjectURL(blob);
+      console.log(this.blobUrl,'====url')
+      this.blobs = [];
+    },
+    onScreenShareEnded () {
+      if (this.localScreenShareStream === null) {
+        return;
+      }
+      console.log('screen share ended')
+      this.stop();
+      this.localScreenShareStream = null;
+       this.$refs['screen-share'].srcObject = null;
+
+      this.disabled.open = false;
+      this.disabled.start = true;
+    },
+    start () {
+      this.recorder.start();
+      this.status = 'recording';
+      this.disabled.start = true;
+      this.disabled.pause = false;
+      this.disabled.stop = false;
+    },
+    pause () {
+      this.recorder.pause();
+      this.status = 'pause';
+      this.disabled.pause = true;
+      this.disabled.resume = false;
+    },
+    resume () {
+      this.recorder.resume();
+      this.status = 'recording';
+      this.disabled.pause = false;
+      this.disabled.resume = true;
+    },
+    stop () {
+      if (this.recorder.state !== 'inactive') {
+        this.recorder.stop();
+      }
+      this.status = 'stop';
+      this.disabled.start = false;
+      this.disabled.pause = true;
+      this.disabled.resume = true;
+      this.disabled.stop = true;
+    },
+    handleDownload () {
+      const link = document.createElement('a');
+      link.href = this.blobUrl;
+      link.download = 'video.webm';
+      link.click();
+      URL.revokeObjectURL(this.blobUrl);
+      this.blobUrl = '';
+    }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+video {
+  width: 500px;
+  background-color: #2c3e50;
+  margin:0 auto;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+.record {
+  text-align: center;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+.rec {
+  position: absolute;
+  background: red;
+  color: #fff;
+  padding: 0 4px;
 }
-a {
-  color: #42b983;
+
+.preview {
+  margin-left: 24px;
+}
+
+.download-button {
+  display: block;
+  margin: 0 auto;
 }
 </style>
