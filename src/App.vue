@@ -1,17 +1,21 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <web-recorder/>
+    <!-- <recorder/> -->
+    <!-- <rrweb-recorder/> -->
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import WebRecorder from './components/WebRecorder.vue'
+// import recorder from './components/RecorderDemo'
+// import RrwebRecorder from './components/RrwebRecorder.vue'
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    WebRecorder,
+    // recorder
+    // RrwebRecorder,
   }
 }
 </script>
