@@ -149,10 +149,11 @@ export default {
     handleDownload () {
       const link = document.createElement('a');
       link.href = this.blobUrl;
-      link.download = 'video';
+      link.download = Date.now();
       link.click(); 
       URL.revokeObjectURL(link.href);
       this.blobUrl = '';
+      
     },
     // 退出录制
     handleExit(){
