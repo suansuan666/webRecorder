@@ -1,32 +1,58 @@
 <template>
   <div class="web-recorder">
-    <div class="web-recorder-warpper" v-if="isScreenShareSupported && isWebRTCSupported">
-      <span class="web-recoder-rec" v-show="status == 'recording' && screenShow">REC</span>
-      <div v-show="screenShow" class="web-recorder-video-box">
-        <video ref="screen-share" autoplay class="web-recorder-video" />
-        <i class="el-icon-error web-recorder-close" @click="handleHideSreen"></i>
+    <el-button 
+      type="primary" 
+      @click="handleSrceenShare"  
+      v-show="openScreenShare" 
+      icon="el-icon-video-camera"
+      class="icon-camera"
+    > 
+      录屏
+    </el-button>
+    <div v-show="!openScreenShare">
+      <div :class="videoWrapperShow ? 'hamburger' : 'hamburger-hid'" @click="toggleHamburger">
+        <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
+        <i class="el-icon-arrow-left" v-show="!videoWrapperShow"></i>
       </div>
-      <el-button 
-        type="primary" 
-        @click="handleSrceenShare"  
-        v-show="openScreenShare" 
-        size="mini"
-        icon="el-icon-video-camera-solid"
-        round
-      > 
-        录屏
-      </el-button>
-      <div class="action-group">
-        <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始录屏 </el-button>
-        <el-button type="warning" @click="handlePause" v-show="pauseRecord" size="mini"> 暂停录屏 </el-button>
-        <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续录屏 </el-button>
-        <el-button type="danger" @click="hanldeStop" v-show="stopRecord" size="mini"> 停止录屏 </el-button>
-        <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出录屏 </el-button>
-        <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载录屏</el-button>
+      <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
+        <div v-show="videoWrapperShow" class="web-recorder-box">
+          <div class="web-recorder-warpper">
+            <span class="web-recoder-rec" v-show="status == 'recording' && screenShow">REC</span>
+            <div v-show="screenShow" class="web-recorder-video-box">
+              <video ref="screen-share" autoplay class="web-recorder-video" />
+            </div>
+            <div class="action-group">
+              <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始 </el-button>
+              <el-button  @click="handlePause" v-show="pauseRecord" size="mini"> 暂停 </el-button>
+              <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续</el-button>
+              <el-button type="info" @click="hanldeStop" v-show="stopRecord" size="mini"> 停止 </el-button>
+              <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载</el-button>
+              <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出 </el-button>
+            </div>
+          </div>
+        </div>
+        <div class="handle-btn-bar" v-show="!videoWrapperShow">
+          <el-tooltip class="item" effect="light" content="开始" placement="left">
+            <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"/>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="暂停" placement="left">
+            <div class="el-icon-video-pause handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="继续" placement="left">
+             <div class="el-icon-video-play handle-icon" @click="handleResume" v-show="resumeRecord"></div>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="停止" placement="left">
+            <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord" ></div>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="下载" placement="left">
+            <div class="el-icon-bottom handle-icon" @click="handleDownload" v-show="downloadShow"></div>
+          </el-tooltip>
+          <el-tooltip class="item" effect="light" content="退出" placement="left">
+            <div class="el-icon-circle-close handle-icon" @click="handleExit" v-show="exitRecord"></div>
+          </el-tooltip>
+        </div>
       </div>
-       
     </div>
-    <h2 v-else>Sorry! WebRTC is not fully supported on your browser! Please install latest Chrome on your computer and try this page again.</h2>
   </div>
 </template>
 
@@ -53,6 +79,7 @@ export default {
       openScreenShare:true,
       downloadShow:false,
       exitRecord:false,
+      videoWrapperShow:true
     }
   },
   created(){
@@ -89,6 +116,7 @@ export default {
       this.startRecord = true;
       this.screenShow = true;
       this.exitRecord = true;
+      this.$message('点击开始按钮后才会开始录屏哦～')
     },
     onDataAvailable (e) {
       this.blobs.push(e.data);
@@ -97,7 +125,7 @@ export default {
       const blob = new Blob(this.blobs, { 'type': 'video/webm' });
       this.blobUrl = URL.createObjectURL(blob);
       this.blobs = [];
-      this.downloadShow = true;
+      
     },
     onScreenShareEnded () {
       if (this.localScreenShareStream === null) {
@@ -144,6 +172,7 @@ export default {
       this.pauseRecord = false;
       this.stopRecord = false;
       this.resumeRecord = false;
+      this.downloadShow = true;
       this.$message.error('已停止录制')
     },
     handleDownload () {
@@ -153,7 +182,6 @@ export default {
       link.click(); 
       URL.revokeObjectURL(link.href);
       this.blobUrl = '';
-      
     },
     // 退出录制
     handleExit(){
@@ -177,11 +205,15 @@ export default {
       this.openScreenShare = true,
       this.downloadShow = false;
       this.exitRecord = false;
+      this.videoWrapperShow = true;
     },
     // 隐藏视屏框
     handleHideSreen(){
       this.screenShow = false;
     },
+    toggleHamburger(){
+      this.videoWrapperShow = !this.videoWrapperShow;
+    }
     // 文件分片处理
     // sliceFile(file,piece){
     //   let start = 0;
@@ -226,9 +258,9 @@ export default {
 <style scoped>
 .web-recorder {
   position: relative;
-  width:300px;
   z-index:999;
-  text-align: right
+  text-align: right;
+  float: right;
 }
 .web-recorder-warpper {
   position: relative;
@@ -242,6 +274,7 @@ export default {
 .web-recorder-video-box {
   position: relative;
   width: 300px;
+ 
 }
 .web-recorder-close {
   position: absolute;
@@ -262,6 +295,69 @@ export default {
 
 }
 .action-group {
-  text-align: left;
+  text-align: right;
+  width: 300px;
+}
+.web-recorder-box {
+  position: relative;
+  box-shadow: 0px 2px 8px 8px rgb(0 0 0 / 8%);
+  width:300px;
+  margin-left:12px;
+}
+.hamburger{
+  position: absolute;
+  top: 40%;
+  left: 0;
+  width: 12px;
+  height: 42px;
+  line-height: 42px;
+  text-align: center;
+  font-size: 8px;
+  color: #fff;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+  cursor: pointer;
+  background-color:#409EFF;
+  z-index:20;
+}
+.hamburger-hid {
+  position: absolute;
+  top: 34%;
+  left: 0;
+  height: 42px;
+  line-height: 42px;
+  text-align: center;
+  font-size: 8px;
+  color: #fff;
+  cursor: pointer;
+  background-color:#409EFF;
+  z-index:20;
+  width:12px;
+  border-top-left-radius: 30px;
+  border-bottom-left-radius: 30px;
+}
+.handle-btn-bar {
+  width:40px;
+  box-shadow: 0px 2px 8px 8px rgb(0 0 0 / 8%);
+  padding:10px 0;
+}
+.handle-icon{
+  display: block;
+  width:30px;
+  margin: 15px 0;
+  font-size: 20px;
+  cursor: pointer;
+}
+.box-show {
+  width: 312px;
+}
+.box-hid {
+  width:40px;
+  margin-left:12px;
+  background-color:rgba(64,158,255);
+  color: white;
+}
+.icon-camera {
+  padding: 7px 10px;
 }
 </style>
