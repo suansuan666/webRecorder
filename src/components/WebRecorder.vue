@@ -1,6 +1,6 @@
 <template>
   <div class="web-recorder">
-    <el-button 
+    <!-- <el-button 
       type="primary" 
       @click="handleSrceenShare"  
       v-show="openScreenShare" 
@@ -8,11 +8,16 @@
       class="icon-camera"
     > 
       录屏
-    </el-button>
+    </el-button> -->
+    <el-tooltip class="item" effect="light" content="点击此图标即可开始录屏" placement="left">
+      <div @click="handleSrceenShare" v-show="openScreenShare" class="icon-camera">
+        <i class="el-icon-video-camera"></i>
+      </div>
+    </el-tooltip>
     <div v-show="!openScreenShare">
       <div :class="videoWrapperShow ? 'hamburger' : 'hamburger-hid'" @click="toggleHamburger">
         <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
-        <i class="el-icon-arrow-left" v-show="!videoWrapperShow"></i>
+        <i class="el-icon-d-arrow-left icon-24" v-show="!videoWrapperShow"></i>
       </div>
       <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
         <div v-show="videoWrapperShow" class="web-recorder-box">
@@ -22,32 +27,32 @@
               <video ref="screen-share" autoplay class="web-recorder-video" />
             </div>
             <div class="action-group">
-              <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始 </el-button>
+              <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始新录制 </el-button>
               <el-button  @click="handlePause" v-show="pauseRecord" size="mini"> 暂停 </el-button>
               <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续</el-button>
-              <el-button type="info" @click="hanldeStop" v-show="stopRecord" size="mini"> 停止 </el-button>
+              <el-button type="info" @click="hanldeStop" v-show="stopRecord" size="mini"> 完成 </el-button>
               <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载</el-button>
               <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出 </el-button>
             </div>
           </div>
         </div>
         <div class="handle-btn-bar" v-show="!videoWrapperShow">
-          <el-tooltip class="item" effect="light" content="开始" placement="left">
+          <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
             <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"/>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="暂停" placement="left">
+          <el-tooltip class="item" effect="light" content="暂停录制" placement="left">
             <div class="el-icon-video-pause handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="继续" placement="left">
+          <el-tooltip class="item" effect="light" content="继续录制" placement="left">
              <div class="el-icon-video-play handle-icon" @click="handleResume" v-show="resumeRecord"></div>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="停止" placement="left">
+          <el-tooltip class="item" effect="light" content="完成录制" placement="left">
             <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord" ></div>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="下载" placement="left">
+          <el-tooltip class="item" effect="light" content="下载录制的视频" placement="left">
             <div class="el-icon-bottom handle-icon" @click="handleDownload" v-show="downloadShow"></div>
           </el-tooltip>
-          <el-tooltip class="item" effect="light" content="退出" placement="left">
+          <el-tooltip class="item" effect="light" content="退出当前录制" placement="left">
             <div class="el-icon-circle-close handle-icon" @click="handleExit" v-show="exitRecord"></div>
           </el-tooltip>
         </div>
@@ -116,7 +121,7 @@ export default {
       this.startRecord = true;
       this.screenShow = true;
       this.exitRecord = true;
-      this.$message('点击开始按钮后才会开始录屏哦～')
+      this.handleStart()
     },
     onDataAvailable (e) {
       this.blobs.push(e.data);
@@ -297,16 +302,18 @@ export default {
 .action-group {
   text-align: right;
   width: 300px;
+  z-index:99;
 }
 .web-recorder-box {
   position: relative;
   box-shadow: 0px 2px 8px 8px rgb(0 0 0 / 8%);
   width:300px;
   margin-left:12px;
+  border-radius: 4px;
 }
 .hamburger{
   position: absolute;
-  top: 40%;
+  top: 0;
   left: 0;
   width: 12px;
   height: 42px;
@@ -317,35 +324,37 @@ export default {
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
   cursor: pointer;
-  background-color:#409EFF;
+  background: rgba(0,0,0,30%);
   z-index:20;
 }
 .hamburger-hid {
   position: absolute;
-  top: 34%;
-  left: 0;
-  height: 42px;
-  line-height: 42px;
+  top: -24%;
+  left: 4px;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   font-size: 8px;
   color: #fff;
   cursor: pointer;
-  background-color:#409EFF;
-  z-index:20;
-  width:12px;
-  border-top-left-radius: 30px;
-  border-bottom-left-radius: 30px;
+  background-color:rgba(64,158,255);
+  z-index: 20;
+  width: 48px;
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 19px;
+  padding-top:5px;
 }
 .handle-btn-bar {
   width:40px;
   box-shadow: 0px 2px 8px 8px rgb(0 0 0 / 8%);
-  padding:10px 0;
+  padding-bottom: 5px;
+  padding-top: 3px;
 }
 .handle-icon{
   display: block;
-  width:30px;
+  text-align: center;
   margin: 15px 0;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
 }
 .box-show {
@@ -354,10 +363,23 @@ export default {
 .box-hid {
   width:40px;
   margin-left:12px;
-  background-color:rgba(64,158,255);
+  background-color:rgba(64,158,255,0.9);
   color: white;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 .icon-camera {
-  padding: 7px 10px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: white;
+  line-height: 48px;
+  font-size: 26px;
+  text-align: center;
+  background-color:rgba(64,158,255,80%);
+  cursor: pointer;
+}
+.icon-24 {
+  font-size: 24px;
 }
 </style>
