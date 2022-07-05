@@ -15,9 +15,9 @@
       </div>
     </el-tooltip>
     <div v-show="!openScreenShare">
-      <div :class="videoWrapperShow ? 'hamburger' : 'hamburger-hid'" @click="toggleHamburger">
+      <div :class="videoWrapperShow ? 'hamburger' : ''" @click="toggleHamburger">
         <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
-        <i class="el-icon-d-arrow-left icon-24" v-show="!videoWrapperShow"></i>
+        <!-- <i class="el-icon-d-arrow-left icon-24" v-show="!videoWrapperShow"></i> -->
       </div>
       <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
         <div v-show="videoWrapperShow" class="web-recorder-box">
@@ -37,6 +37,9 @@
           </div>
         </div>
         <div class="handle-btn-bar" v-show="!videoWrapperShow">
+          <el-tooltip class="item" effect="light" content="展开小屏" placement="left">
+            <div class="el-icon-d-arrow-left hamburger-hid" @click="toggleHamburger"></div>
+          </el-tooltip>
           <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
             <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"/>
           </el-tooltip>
@@ -219,53 +222,16 @@ export default {
     toggleHamburger(){
       this.videoWrapperShow = !this.videoWrapperShow;
     }
-    // 文件分片处理
-    // sliceFile(file,piece){
-    //   let start = 0;
-    //   let chunckList = [];
-    //   while(start < file.size) {
-    //     chunckList.push({ file: file.slice(start, start + piece)});
-    //     start += piece
-    //   }
-    //   return chunckList
-    // },
-    
-    // 上传分片
-    // uploadFile(file){
-    //   const piece = 1024 * 1024 * 0.1;
-    //   let chunck = this.sliceFile(file,piece);
-    //   // 创建 context参数，用于区分切片文件来源
-    //   const context = `${file.name} + ${file.length}`;
-    //   let tasks = [];
-    //   chunck.forEach((chunck,index) => {
-    //     let fd = new FormData();
-    //     fd.append("file",chunck);
-    //      // 传递context
-    //     fd.append("context", context);
-    //     // 传递切片索引值
-    //     fd.append("chunk", index + 1);
-    //     tasks.push(post('xxx'))
-    //   })
-    //   Promise.all(tasks).then(res => {
-    //     let fd = new FormData();
-    //     fd.append("context", context);
-    //     fd.append("chunks", chunks.length);
-    //     post("xx", fd).then(res => {
-    //     console.log(res);
-    //     });
-    //   })
-    // }
-    // 
   }
 }
 </script>
 
 <style scoped>
 .web-recorder {
-  position: relative;
-  z-index:999;
-  text-align: right;
-  float: right;
+  position: fixed;
+  z-index: 999;
+  bottom:10vh;
+  right:10px;
 }
 .web-recorder-warpper {
   position: relative;
@@ -328,27 +294,19 @@ export default {
   z-index:20;
 }
 .hamburger-hid {
-  position: absolute;
-  top: -24%;
-  left: 4px;
-  height: 30px;
-  line-height: 30px;
-  text-align: center;
-  font-size: 8px;
-  color: #fff;
-  cursor: pointer;
   background-color:rgba(64,158,255);
-  z-index: 20;
-  width: 48px;
-  border-top-left-radius: 25px;
-  border-bottom-left-radius: 19px;
-  padding-top:5px;
+  font-size: 24px;
+  height: 36px;
+  width: 100%;
+  text-align: center;
+  line-height: 36px;
+  border-top-left-radius: 4px;
+  cursor: pointer;
 }
 .handle-btn-bar {
   width:40px;
   box-shadow: 0px 2px 8px 8px rgb(0 0 0 / 8%);
   padding-bottom: 5px;
-  padding-top: 3px;
 }
 .handle-icon{
   display: block;
@@ -365,8 +323,8 @@ export default {
   margin-left:12px;
   background-color:rgba(64,158,255,0.9);
   color: white;
+  border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
 }
 .icon-camera {
   width: 48px;
