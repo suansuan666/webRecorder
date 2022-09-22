@@ -22,6 +22,7 @@
     "core-js": "^3.8.3",
     "element-ui": "^2.15.8",
     "rrweb": "^1.1.3",
+    "rrweb-player": "^0.7.14",
     "vue": "^2.6.14"
   },
   "devDependencies": {
@@ -32,6 +33,8 @@
     "@vue/cli-service": "~5.0.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
+    "node-sass": "^7.0.1",
+    "sass-loader": "^13.0.2",
     "vue-template-compiler": "^2.6.14",
     "webpack-cli": "^4.10.0"
   },

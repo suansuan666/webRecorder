@@ -9,7 +9,7 @@
 <script>
 import WebRecorder from './components/WebRecorder.vue'
 // import recorder from './components/RecorderDemo'
-// import RrwebRecorder from './components/RrwebRecorder.vue'
+import RrwebRecorder from './components/RrwebRecorder.vue'
 export default {
   name: 'App',
   components: {

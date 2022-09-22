@@ -1,14 +1,5 @@
 <template>
   <div class="web-recorder">
-    <!-- <el-button 
-      type="primary" 
-      @click="handleSrceenShare"  
-      v-show="openScreenShare" 
-      icon="el-icon-video-camera"
-      class="icon-camera"
-    > 
-      录屏
-    </el-button> -->
     <el-tooltip class="item" effect="light" content="点击此图标即可开始录屏" placement="left">
       <div @click="handleSrceenShare" v-show="openScreenShare" class="icon-camera">
         <i class="el-icon-video-camera"></i>
@@ -17,7 +8,6 @@
     <div v-show="!openScreenShare">
       <div :class="videoWrapperShow ? 'hamburger' : ''" @click="toggleHamburger">
         <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
-        <!-- <i class="el-icon-d-arrow-left icon-24" v-show="!videoWrapperShow"></i> -->
       </div>
       <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
         <div v-show="videoWrapperShow" class="web-recorder-box">
@@ -30,7 +20,7 @@
               <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始新录制 </el-button>
               <el-button  @click="handlePause" v-show="pauseRecord" size="mini"> 暂停 </el-button>
               <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续</el-button>
-              <el-button type="info" @click="hanldeStop" v-show="stopRecord" size="mini"> 完成 </el-button>
+              <el-button type="primary" @click="hanldeStop" v-show="stopRecord" size="mini"> 完成 </el-button>
               <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载</el-button>
               <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出 </el-button>
             </div>
@@ -41,7 +31,7 @@
             <div class="el-icon-d-arrow-left hamburger-hid" @click="toggleHamburger"></div>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
-            <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"/>
+            <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"></div>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="暂停录制" placement="left">
             <div class="el-icon-video-pause handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
@@ -50,7 +40,7 @@
              <div class="el-icon-video-play handle-icon" @click="handleResume" v-show="resumeRecord"></div>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="完成录制" placement="left">
-            <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord" ></div>
+            <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord"></div>
           </el-tooltip>
           <el-tooltip class="item" effect="light" content="下载录制的视频" placement="left">
             <div class="el-icon-bottom handle-icon" @click="handleDownload" v-show="downloadShow"></div>
@@ -61,6 +51,50 @@
         </div>
       </div>
     </div>
+    <!-- 兜底提示框 -->
+    <el-dialog
+      title="提示"
+      :visible.sync="centerDialogVisible"
+      width="30%"
+      center>
+      <span class="center-dialog-title">当前环境暂无法使用，您可通过完成以下配置在Chrome浏览器中进行使用</span>
+      <el-steps :active="stepNum" finish-status="success" class="step">
+        <el-step title="步骤 1"></el-step>
+        <el-step title="步骤 2"></el-step>
+        <el-step title="步骤 3"></el-step>
+      </el-steps>
+      <div class="step-content">
+        <div v-show="stepNum === 0" class="content">
+          <h4>1、复制：chrome://flags/#unsafely-treat-insecure-origin-as-secure</h4>
+          <h4>2、打开浏览器并将上述地址输入至地址栏</h4>
+          <div class="pic">
+            <img src="@/assets/step-1.png">
+          </div>
+        </div>
+        <div v-show="stepNum === 1" class="content">
+          <h4 class="mr-0">1、将当前域名：<span class="blue">{{ hostname }}</span> 填入以下位置</h4> 
+          <h4 class="mr-0">2、将按钮切换成<el-button type="text"> Enable</el-button>状态</h4>
+          <div class="pic">
+            <img src="@/assets/step-2.png"/>
+          </div>
+        </div>
+        <div v-show="stepNum === 2" class="content">
+          <h4> 点击底部Relaunch按钮即可生效</h4>
+          <div class="pic">
+            <img src="@/assets/step-3.png"/>
+          </div>
+        </div>
+      </div>
+      <span slot="footer" class="dialog-footer" v-if="stepNum < 2">
+        <el-button type="primary" @click="last" v-if="stepNum === 1">上一步</el-button>
+        <el-button type="primary" @click="next">下一步</el-button>
+      </span>
+      <span slot="footer" class="dialog-footer" v-if="stepNum === 2">
+        <el-button type="primary" @click="last">上一步</el-button>
+        <el-button type="primary" @click="centerDialogVisible = false">知道了</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -87,7 +121,10 @@ export default {
       openScreenShare:true,
       downloadShow:false,
       exitRecord:false,
-      videoWrapperShow:true
+      videoWrapperShow:true,
+      centerDialogVisible:false,
+      stepNum: 0,
+      hostname:'',
     }
   },
   created(){
@@ -97,6 +134,7 @@ export default {
     if(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       this.isWebRTCSupported = true
     }
+    this.hostname = window.location.origin;
   },
    mounted () {
     this.screenShareVideoElement = this.$refs['screen-share'];
@@ -107,8 +145,12 @@ export default {
       // mediaDevices.getUserMedia() 信息流捕获 参数里可以去指定媒体类型
       // const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       // mediaDevices.getDisplayMedia()屏幕捕获  用户选择和授权展示的窗口
-      this.localScreenShareStream = await navigator.mediaDevices.getDisplayMedia();
-      // this.localScreenShareStream.addTrack(tempStream.getAudioTracks()[0]); // 添加音频轨道
+      try{
+        this.localScreenShareStream = await navigator.mediaDevices.getDisplayMedia().catch(e => console.log('取消授权'))
+      } catch(e){
+        this.stepNum = 0;
+        this.centerDialogVisible = true;
+      }
       const screenShareTrack = this.localScreenShareStream.getVideoTracks()[0];
       if (screenShareTrack) {
         screenShareTrack.onended = this.onScreenShareEnded;
@@ -221,6 +263,15 @@ export default {
     },
     toggleHamburger(){
       this.videoWrapperShow = !this.videoWrapperShow;
+    },
+    next(){
+      this.stepNum++ ;
+      if(this.stepNum > 2) {
+        this.stepNum = 0
+      }
+    },
+    last(){
+      this.stepNum --;
     }
   }
 }
@@ -340,4 +391,42 @@ export default {
 .icon-24 {
   font-size: 24px;
 }
+.step-content{
+  display: flex;
+  justify-content: space-between;
+  align-items: center
+}
+.arrow-icon {
+  font-size: 24px;
+  cursor: pointer;
+}
+.step {
+  margin:20px 0;
+}
+.step-content h4{
+  text-align: left;
+  /* margin-bottom: 0; */
+}
+img {
+  width:100%;
+  height:100%;
+}
+.el-dialog__wrapper {
+  z-index: 30000 !important
+}
+.v-modal {
+  z-index:0 !important
+}
+.blue {
+  color:#409EFF;
+}
+.mr-0 {
+  margin:0;
+}
 </style>
+<style>
+.center-dialog-title{
+  text-align: center
+}
+</style>
+
