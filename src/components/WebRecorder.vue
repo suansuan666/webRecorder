@@ -1,60 +1,84 @@
 <template>
-  <div class="web-recorder">
-    <el-tooltip class="item" effect="light" content="点击此图标即可开始录屏" placement="left">
-      <div @click="handleSrceenShare" v-show="openScreenShare" class="icon-camera">
-        <i class="el-icon-video-camera"></i>
-      </div>
-    </el-tooltip>
-    <div v-show="!openScreenShare">
-      <div :class="videoWrapperShow ? 'hamburger' : ''" @click="toggleHamburger">
-        <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
-      </div>
-      <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
-        <div v-show="videoWrapperShow" class="web-recorder-box">
-          <div class="web-recorder-warpper">
-            <span class="web-recoder-rec" v-show="status == 'recording' && screenShow">REC</span>
-            <div v-show="screenShow" class="web-recorder-video-box">
-              <video ref="screen-share" autoplay class="web-recorder-video" />
+  <div class="web-recorder-wrapper">
+    <vue-draggable-resizable  
+      @dragging="onDragging" 
+      :parent="true" 
+      class="drag-wrapper" 
+      :w="initWidth" 
+      :h="initHeight" 
+      :x="initXPostion" 
+      :y="initYPostion"
+      :z="999"
+    >
+      <div class="web-recorder">
+        <el-tooltip class="item" effect="light" content="点击此图标即可开始录屏" placement="left" :disabled="toolTipHidden" >
+          <div 
+            @mousedown="handleMouseDown"
+            @mousemove="handleMouseMove" 
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+            @click="handleSrceenShare" 
+            v-show="openScreenShare" 
+            class="icon-camera"
+          >
+            <i class="el-icon-video-camera"></i>
+          </div>
+        </el-tooltip>
+        <div v-show="!openScreenShare">
+          <div :class="videoWrapperShow ? 'hamburger' : ''" @click="toggleHamburger">
+            <i class="el-icon-arrow-right" v-show="videoWrapperShow" ></i>
+          </div>
+          <div v-if="isScreenShareSupported && isWebRTCSupported" :class="videoWrapperShow ? 'box-show' : 'box-hid'">
+            <div v-show="videoWrapperShow" class="web-recorder-box">
+              <div class="web-recorder-warpper">
+                <span class="web-recoder-rec" v-show="status == 'recording' && screenShow">REC</span>
+                <div v-show="screenShow" class="web-recorder-video-box">
+                  <video ref="screen-share" autoplay class="web-recorder-video" />
+                </div>
+                <div class="action-group">
+                  <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始新录制 </el-button>
+                  <el-button  @click="handlePause" v-show="pauseRecord" size="mini"> 暂停 </el-button>
+                  <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续</el-button>
+                  <el-button type="primary" @click="hanldeStop" v-show="stopRecord" size="mini"> 完成 </el-button>
+                  <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载</el-button>
+                  <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出 </el-button>
+                </div>
+              </div>
             </div>
-            <div class="action-group">
-              <el-button type="primary" @click="handleStart" v-show="startRecord" size="mini"> 开始新录制 </el-button>
-              <el-button  @click="handlePause" v-show="pauseRecord" size="mini"> 暂停 </el-button>
-              <el-button type="primary" @click="handleResume" v-show="resumeRecord" size="mini"> 继续</el-button>
-              <el-button type="primary" @click="hanldeStop" v-show="stopRecord" size="mini"> 完成 </el-button>
-              <el-button type="success" @click="handleDownload" v-show="downloadShow" size="mini">下载</el-button>
-              <el-button type="danger" @click="handleExit" v-show="exitRecord" size="mini"> 退出 </el-button>
+            <div class="handle-btn-bar" v-show="!videoWrapperShow">
+              <el-tooltip class="item" effect="light" content="展开小屏" placement="left">
+                <div class="el-icon-d-arrow-left hamburger-hid" @click="toggleHamburger"></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
+                <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="暂停录制" placement="left">
+                <div class="el-icon-video-pause handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="继续录制" placement="left">
+                <div class="el-icon-video-play handle-icon" @click="handleResume" v-show="resumeRecord"></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="完成录制" placement="left">
+                <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord"></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="下载录制的视频" placement="left">
+                <div class="el-icon-bottom handle-icon" @click="handleDownload" v-show="downloadShow"></div>
+              </el-tooltip>
+              <el-tooltip class="item" effect="light" content="退出当前录制" placement="left">
+                <div class="el-icon-circle-close handle-icon" @click="handleExit" v-show="exitRecord"></div>
+              </el-tooltip>
             </div>
           </div>
         </div>
-        <div class="handle-btn-bar" v-show="!videoWrapperShow">
-          <el-tooltip class="item" effect="light" content="展开小屏" placement="left">
-            <div class="el-icon-d-arrow-left hamburger-hid" @click="toggleHamburger"></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
-            <div class="el-icon-video-play handle-icon" @click="handleStart" v-show="startRecord"></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="暂停录制" placement="left">
-            <div class="el-icon-video-pause handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="继续录制" placement="left">
-             <div class="el-icon-video-play handle-icon" @click="handleResume" v-show="resumeRecord"></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="完成录制" placement="left">
-            <div class="el-icon-finished handle-icon" @click="hanldeStop"  v-show="stopRecord"></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="下载录制的视频" placement="left">
-            <div class="el-icon-bottom handle-icon" @click="handleDownload" v-show="downloadShow"></div>
-          </el-tooltip>
-          <el-tooltip class="item" effect="light" content="退出当前录制" placement="left">
-            <div class="el-icon-circle-close handle-icon" @click="handleExit" v-show="exitRecord"></div>
-          </el-tooltip>
-        </div>
       </div>
-    </div>
+     
+    </vue-draggable-resizable>
+   
     <!-- 兜底提示框 -->
     <el-dialog
       title="提示"
       :visible.sync="centerDialogVisible"
+      :modal-append-to-body="false"
       width="30%"
       center>
       <span class="center-dialog-title">当前环境暂无法使用，您可通过完成以下配置在Chrome浏览器中进行使用</span>
@@ -68,20 +92,20 @@
           <h4>1、复制：chrome://flags/#unsafely-treat-insecure-origin-as-secure</h4>
           <h4>2、打开浏览器并将上述地址输入至地址栏</h4>
           <div class="pic">
-            <img src="@/assets/step-1.png">
+            <img src="../assets/step-1.png">
           </div>
         </div>
         <div v-show="stepNum === 1" class="content">
           <h4 class="mr-0">1、将当前域名：<span class="blue">{{ hostname }}</span> 填入以下位置</h4> 
           <h4 class="mr-0">2、将按钮切换成<el-button type="text"> Enable</el-button>状态</h4>
           <div class="pic">
-            <img src="@/assets/step-2.png"/>
+            <img src="../assets/step-2.png"/>
           </div>
         </div>
         <div v-show="stepNum === 2" class="content">
           <h4> 点击底部Relaunch按钮即可生效</h4>
           <div class="pic">
-            <img src="@/assets/step-3.png"/>
+            <img src="../assets/step-3.png"/>
           </div>
         </div>
       </div>
@@ -94,13 +118,31 @@
         <el-button type="primary" @click="centerDialogVisible = false">知道了</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
+import VueDraggableResizable from 'vue-draggable-resizable'
+import { throttle } from 'lodash'
 export default {
   name:'webRecorder',
+  components: {
+    VueDraggableResizable,
+  },
+  props:{
+    initWidth:{
+      type:Number,
+      default:100,
+    },
+    initHeight:{
+      type:Number,
+      default:150,
+    },
+    initYPostion:{
+      type:Number,
+      default:400,
+    }
+  },
   data() {
     return {
       blobs:[],
@@ -125,6 +167,9 @@ export default {
       centerDialogVisible:false,
       stepNum: 0,
       hostname:'',
+      isDrag:false,
+      toolTipHidden:false,
+      initXPostion:0
     }
   },
   created(){
@@ -135,9 +180,11 @@ export default {
       this.isWebRTCSupported = true
     }
     this.hostname = window.location.origin;
+    
   },
    mounted () {
     this.screenShareVideoElement = this.$refs['screen-share'];
+    this.initXPostion = document.body.clientWidth - 10;
   },
 
   methods:{
@@ -145,6 +192,9 @@ export default {
       // mediaDevices.getUserMedia() 信息流捕获 参数里可以去指定媒体类型
       // const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       // mediaDevices.getDisplayMedia()屏幕捕获  用户选择和授权展示的窗口
+      if(this.isDrag) {
+        return false
+      }
       try{
         this.localScreenShareStream = await navigator.mediaDevices.getDisplayMedia().catch(e => console.log('取消授权'))
       } catch(e){
@@ -272,17 +322,41 @@ export default {
     },
     last(){
       this.stepNum --;
-    }
+    },
+    handleMouseDown(){
+      this.isDrag = false;
+    },
+    handleMouseMove(){
+      this.isDrag = true;
+    },
+    onDragging(){
+      this.toolTipHidden = true
+    },
+    handleMouseEnter: throttle(function(){
+      this.toolTipHidden = false
+    },300),
+    handleMouseLeave: throttle(function(){
+      this.toolTipHidden = true;
+    },300),
   }
 }
 </script>
 
 <style scoped>
-.web-recorder {
+.web-recorder-wrapper {
+  height: 100%;
+  width: 100%;
   position: fixed;
-  z-index: 999;
-  bottom:10vh;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index:99999;
+}
+.web-recorder {
+  position: absolute;
+  bottom:0;
   right:10px;
+  pointer-events: auto;
 }
 .web-recorder-warpper {
   position: relative;
@@ -412,17 +486,17 @@ img {
   height:100%;
 }
 .el-dialog__wrapper {
-  z-index: 30000 !important
+  z-index: 30000 !important;
+  pointer-events: auto;
 }
-.v-modal {
-  z-index:0 !important
-}
+
 .blue {
   color:#409EFF;
 }
 .mr-0 {
   margin:0;
 }
+
 </style>
 <style>
 .center-dialog-title{
