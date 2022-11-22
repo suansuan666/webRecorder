@@ -394,6 +394,7 @@ export default {
   text-align: right;
   width: 300px;
   z-index:99;
+  background: white
 }
 .web-recorder-box {
   position: relative;
