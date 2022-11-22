@@ -11,7 +11,7 @@
       :z="999"
     >
       <div class="web-recorder">
-        <el-tooltip class="item" effect="light" content="点击此图标即可开始录屏" placement="left" :disabled="toolTipHidden" >
+        <el-tooltip class="item" effect="light" content="点击此图标可录屏哦" placement="left" :disabled="toolTipHidden" >
           <div 
             @mousedown="handleMouseDown"
             @mousemove="handleMouseMove" 
@@ -50,22 +50,22 @@
                 <div class="el-icon-d-arrow-left hamburger-hid" @click="toggleHamburger"></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="开始新录制" placement="left">
-                <div class="el-icon-square-add-solid handle-icon" @click="handleStart" v-show="startRecord"></div>
+                <div class="el-icon-exit-solid handle-icon" @click="handleStart" v-show="startRecord"></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="暂停录制" placement="left">
-                <div class="el-icon-minus-square-solid handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
+                <div class="el-icon-caret-right handle-icon" @click="handlePause" v-show="pauseRecord" ></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="继续录制" placement="left">
                 <div class="el-icon-document handle-icon" @click="handleResume" v-show="resumeRecord"></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="完成录制" placement="left">
-                <div class="el-icon-save handle-icon" @click="hanldeStop"  v-show="stopRecord"></div>
+                <div class="el-icon-circle-check handle-icon" @click="hanldeStop"  v-show="stopRecord"></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="下载录制的视频" placement="left">
                 <div class="el-icon-download handle-icon" @click="handleDownload" v-show="downloadShow"></div>
               </el-tooltip>
               <el-tooltip class="item" effect="light" content="退出当前录制" placement="left">
-                <div class="el-icon-circle-close handle-icon" @click="handleExit" v-show="exitRecord"></div>
+                <div class="el-icon-storage handle-icon" @click="handleExit" v-show="exitRecord"></div>
               </el-tooltip>
             </div>
           </div>

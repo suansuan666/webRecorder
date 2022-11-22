@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import WebRecorder from './WebRecorder.vue'
-import ElementUI from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
-Vue.use(ElementUI);
+import Lui from '@lui/lui-ui'
+import '@lui/lui-ui/lib/theme-chalk/index.css'
+Vue.use(Lui);
 
 // const Components = {
 //     WebRecorder
@@ -13,19 +13,6 @@ Vue.use(ElementUI);
 // export default Components
 
 const Recorder = {};
-// Recorder.install = function(Vue) {
-//     const RecorderConstructor = Vue.extend(WebRecorder);
-//     const instance = new RecorderConstructor();
-//     instance.$mount(document.createElement('div'))
-//     document.body.appendChild(instance.$el);
-//     Vue.prototype.$recorder = (msg, duration = 2000) => {
-//         instance.message = msg;
-//         instance.show = true;
-//         setTimeout(() => {
-//             instance.show = false;
-//         }, duration);
-//     }
-// }
 Recorder.install = (Vue) => {
     Vue.component('recorder', WebRecorder)
 }
